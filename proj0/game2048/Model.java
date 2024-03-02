@@ -5,7 +5,7 @@ import java.util.Observable;
 
 
 /** The state of a game of 2048.
- *  @author TODO: YOUR NAME HERE
+ *  @author StellarLane
  */
 public class Model extends Observable {
     /** Current contents of the board. */
@@ -138,6 +138,21 @@ public class Model extends Observable {
      * */
     public static boolean emptySpaceExists(Board b) {
         // TODO: Fill in this function.
+        int l=0;
+        l=b.size();
+        int i=0,j=0;
+        while (i<l)
+        {
+            while (j<l)
+            {
+                if (b.tile(i,j) == null) {
+                    return true;
+                }
+                j++;
+            }
+            i++;
+            j=0;
+        }
         return false;
     }
 
@@ -148,6 +163,26 @@ public class Model extends Observable {
      */
     public static boolean maxTileExists(Board b) {
         // TODO: Fill in this function.
+        int l=b.size(),i=0,j=0;
+        while (i<l)
+        {
+            while (j<l)
+            {
+                Tile t=b.tile(i,j);
+                if(t==null)
+                {
+                    j++;
+                    continue;
+                }
+                if(t.value()==MAX_PIECE)
+                {
+                    return true;
+                }
+                j++;
+            }
+            i++;
+            j=0;
+        }
         return false;
     }
 
@@ -159,8 +194,91 @@ public class Model extends Observable {
      */
     public static boolean atLeastOneMoveExists(Board b) {
         // TODO: Fill in this function.
+        int i=0,j=0,l= b.size();
+        if (emptySpaceExists(b))
+        {
+            return true;
+        }
+        while (j<l)
+        {
+            while (i<l)
+            {
+                if (FourDirSearch(b,i,j))return true;
+                else i++;
+            }
+            i=0;
+            j++;
+        }
+
         return false;
     }
+
+    public static boolean FourDirSearch(Board b,int i,int j){
+        Tile t=b.tile(i,j),t_l,t_r,t_up,t_un;
+        int l= b.size();
+        if (i==0 && j==0)
+        {
+            t_up=b.tile(i,j+1);
+            t_r=b.tile(i+1,j);
+            return (t.value()==t_up.value() || t.value()== t_r.value());
+        }
+        if (i!=l-1 && j==0)
+        {
+            t_up=b.tile(i,j+1);
+            t_r=b.tile(i+1,j);
+            t_l=b.tile(i-1,j);
+            return (t.value()==t_up.value() || t.value()==t_l.value() || t.value()==t_r.value());
+        }
+        if (i==l-1 && j==0)
+        {
+            t_l=b.tile(i-1,j);
+            t_up=b.tile(i,j+1);
+            return (t.value()==t_up.value() || t.value()==t_l.value());
+        }
+        if (i==0 && j!=l-1)
+        {
+            t_up=b.tile(i,j+1);
+            t_r=b.tile(i+1,j);
+            t_un=b.tile(i,j-1);
+            return (t.value()==t_up.value() || t.value()==t_un.value() || t.value()==t_r.value());
+        }
+        if (i!=l-1 && j!=l-1)
+        {
+            t_up=b.tile(i,j+1);
+            t_r=b.tile(i+1,j);
+            t_un=b.tile(i,j-1);
+            t_l=b.tile(i-1,j);
+            return (t.value()==t_up.value() || t.value()==t_un.value() || t.value()==t_r.value() || t.value()== t_l.value());
+        }
+        if (i==l-1 && j!=l-1)
+        {
+            t_up=b.tile(i,j+1);
+            t_un=b.tile(i,j-1);
+            t_l=b.tile(i-1,j);
+            return (t.value()==t_up.value() || t.value()==t_un.value() || t.value()== t_l.value());
+        }
+        if (i==0 && j==l-1)
+        {
+            t_r=b.tile(i+1,j);
+            t_un=b.tile(i,j-1);
+            return (t.value()==t_un.value() || t.value()==t_r.value());
+        }
+        if (i!=l-1 && j==l-1)
+        {
+            t_r=b.tile(i+1,j);
+            t_un=b.tile(i,j-1);
+            t_l=b.tile(i-1,j);
+            return (t.value()==t_un.value() || t.value()==t_r.value() || t.value()== t_l.value());
+        }
+        if (i==l-1 && j==l-1)
+        {
+            t_un=b.tile(i,j-1);
+            t_l=b.tile(i-1,j);
+            return (t.value()==t_un.value() || t.value()== t_l.value());
+        }
+        return false;
+    }
+
 
 
     @Override
