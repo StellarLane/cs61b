@@ -113,12 +113,40 @@ public class Model extends Observable {
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
-
+        this.board.setViewingPerspective(side);
+        Board tmp=this.board;
+        int l=this.board.size()-1,top=l;
+        for (int i=0,j=l;i<=l;i++)
+        {
+            for (j=l;j>=0;j--)
+            {
+                if (this.board.tile(i,j)==null)continue;
+                int des= Model.moveto(i,j,this.board,top);
+                Tile t=this.board.tile(i,j);
+                if (this.board.move(i,des,t))
+                {
+                    score+=this.board.tile(i,des).value();
+                    top--;
+                }
+                if (des!=j)changed=true;
+            }
+            top=l;
+        }
         checkGameOver();
         if (changed) {
             setChanged();
         }
+        this.board.setViewingPerspective(Side.NORTH);
         return changed;
+    }
+
+    public static  int moveto(int col,int row,Board b,int top)
+    {
+        for (int j=top;j>=row;j--)
+        {
+            if (b.tile(col,j)==null || b.tile(col,j).value()==b.tile(col,row).value())return j;
+        }
+        return row;
     }
 
     /** Checks if the game is over and sets the gameOver variable
@@ -203,82 +231,58 @@ public class Model extends Observable {
         {
             while (i<l)
             {
-                if (FourDirSearch(b,i,j))return true;
-                else i++;
+                int[] surr=getfour(b,i,j);
+                int value=b.tile(i,j).value();
+                if (checksurr(surr,value))return true;
+                i++;
             }
             i=0;
             j++;
         }
-
         return false;
     }
 
-    public static boolean FourDirSearch(Board b,int i,int j){
-        Tile t=b.tile(i,j),t_l,t_r,t_up,t_un;
-        int l= b.size();
-        if (i==0 && j==0)
-        {
-            t_up=b.tile(i,j+1);
-            t_r=b.tile(i+1,j);
-            return (t.value()==t_up.value() || t.value()== t_r.value());
-        }
-        if (i!=l-1 && j==0)
-        {
-            t_up=b.tile(i,j+1);
-            t_r=b.tile(i+1,j);
-            t_l=b.tile(i-1,j);
-            return (t.value()==t_up.value() || t.value()==t_l.value() || t.value()==t_r.value());
-        }
-        if (i==l-1 && j==0)
-        {
-            t_l=b.tile(i-1,j);
-            t_up=b.tile(i,j+1);
-            return (t.value()==t_up.value() || t.value()==t_l.value());
-        }
-        if (i==0 && j!=l-1)
-        {
-            t_up=b.tile(i,j+1);
-            t_r=b.tile(i+1,j);
-            t_un=b.tile(i,j-1);
-            return (t.value()==t_up.value() || t.value()==t_un.value() || t.value()==t_r.value());
-        }
-        if (i!=l-1 && j!=l-1)
-        {
-            t_up=b.tile(i,j+1);
-            t_r=b.tile(i+1,j);
-            t_un=b.tile(i,j-1);
-            t_l=b.tile(i-1,j);
-            return (t.value()==t_up.value() || t.value()==t_un.value() || t.value()==t_r.value() || t.value()== t_l.value());
-        }
-        if (i==l-1 && j!=l-1)
-        {
-            t_up=b.tile(i,j+1);
-            t_un=b.tile(i,j-1);
-            t_l=b.tile(i-1,j);
-            return (t.value()==t_up.value() || t.value()==t_un.value() || t.value()== t_l.value());
-        }
-        if (i==0 && j==l-1)
-        {
-            t_r=b.tile(i+1,j);
-            t_un=b.tile(i,j-1);
-            return (t.value()==t_un.value() || t.value()==t_r.value());
-        }
-        if (i!=l-1 && j==l-1)
-        {
-            t_r=b.tile(i+1,j);
-            t_un=b.tile(i,j-1);
-            t_l=b.tile(i-1,j);
-            return (t.value()==t_un.value() || t.value()==t_r.value() || t.value()== t_l.value());
-        }
-        if (i==l-1 && j==l-1)
-        {
-            t_un=b.tile(i,j-1);
-            t_l=b.tile(i-1,j);
-            return (t.value()==t_un.value() || t.value()== t_l.value());
+    public static  boolean checksurr(int[] surr,int value)
+    {
+        for(int i=0;i<4;i++){
+            if (surr[i]==value)return true;
         }
         return false;
     }
 
+
+    public static int[] getfour(Board b,int i,int j)
+    {
+        int[] ans=new int[4];
+        int l= b.size()-1,tmp=0;
+        if (checkifvalid(i-1,j,l))
+        {
+            ans[tmp]=b.tile(i-1,j).value();
+            tmp++;
+        }
+        if (checkifvalid(i,j-1,l))
+        {
+            ans[tmp]=b.tile(i,j-1).value();
+            tmp++;
+        }
+        if (checkifvalid(i+1,j,l))
+        {
+            ans[tmp]=b.tile(i+1,j).value();
+            tmp++;
+        }
+        if (checkifvalid(i,j+1,l))
+        {
+            ans[tmp]=b.tile(i,j+1).value();
+            tmp++;
+        }
+        return ans;
+
+    }
+
+    public static boolean checkifvalid(int m,int n,int l)
+    {
+        return m>=0 && m<=l && n>=0 && n<=l;
+    }
 
 
     @Override
